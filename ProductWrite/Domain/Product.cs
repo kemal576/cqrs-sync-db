@@ -1,10 +1,7 @@
-﻿using MongoDB.Bson;
-using MongoDB.EntityFrameworkCore;
-using ProductWrite.Domain.Base;
+﻿using ProductWrite.Domain.Base;
 
 namespace ProductWrite.Domain;
 
-[Collection("products")]
 public class Product : BaseEntity
 {
     public string Name {get; init;}
@@ -28,7 +25,6 @@ public class Product : BaseEntity
             
         return new Product
         { 
-            Id = Guid.NewGuid(),
             Name = name,
             Description = description,
             Price = price,

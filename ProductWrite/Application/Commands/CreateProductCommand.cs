@@ -1,8 +1,6 @@
 ﻿using MediatR;
-using MongoDB.Bson;
 using ProductWrite.Application.Inputs;
 using ProductWrite.Domain;
-using ProductWrite.Domain.Base;
 using ProductWrite.Infrastructure;
 
 namespace ProductWrite.Application.Commands;
@@ -12,12 +10,10 @@ public record CreateProductCommand(CreateProductCommandInput Input) : IRequest<G
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Guid>
 {
     private readonly IProductRepository _repository;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProductCommandHandler(IProductRepository repository, IUnitOfWork unitOfWork)
+    public CreateProductCommandHandler(IProductRepository repository)
     {
         _repository = repository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Guid> Handle(CreateProductCommand request,
@@ -26,7 +22,6 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         var product = Product.Create(request.Input.Name, request.Input.Description, request.Input.Price);
 
         await _repository.AddAsync(product,  cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return product.Id;
     }
