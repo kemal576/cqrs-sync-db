@@ -26,7 +26,7 @@ func (r *ProductReadRepository) GetById(ctx context.Context, id string) (*models
 
 	defer res.Body.Close()
 	if res.IsError() {
-		return nil, fmt.Errorf("Error getting product: %s", res.String())
+		return nil, fmt.Errorf("error getting product: %s", res.String())
 	}
 
 	var doc struct {
@@ -58,7 +58,7 @@ func (r *ProductReadRepository) GetAll(ctx context.Context) ([]models.Product, e
 
 	defer res.Body.Close()
 	if res.IsError() {
-		return nil, fmt.Errorf("Error searching products: %s", res.String())
+		return nil, fmt.Errorf("error searching products: %s", res.String())
 	}
 
 	var resp struct {
