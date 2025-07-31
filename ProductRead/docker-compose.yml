@@ -27,8 +27,13 @@ services:
   elasticvue:
     image: cars10/elasticvue:latest
     ports:
-      - "8081:8080"
+      - "8082:8080"
     depends_on:
       - elasticsearch
 volumes:
   esdata:
+  
+networks:
+  default:
+    name: debezium-net
+    external: true
