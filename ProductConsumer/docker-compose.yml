@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  product-consumer:
+    build: .
+    environment:
+      - ELASTICSEARCH_ADDR=elasticsearch:9200
+      - KAFKA_BROKER=kafka:9092
+      - PRODUCT_CDC_TOPIC=mongo_cdc.ProductDb.Products
+    restart: unless-stopped
+    networks:
+      - default
+
+networks:
+  default:
+    name: debezium-net
+    external: true
