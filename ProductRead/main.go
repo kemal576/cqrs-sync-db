@@ -11,6 +11,7 @@ import (
 
 func main() {
 	esAddr := os.Getenv("ELASTICSEARCH_ADDR")
+	println("Elasticsearch address:", esAddr)
 	if esAddr == "" {
 		panic("ELASTICSEARCH_ADDR environment variable is not set")
 	}
