@@ -16,7 +16,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - cqrs-network
+      - default
 
   mongo:
     container_name: mongo
@@ -24,10 +24,11 @@ services:
     restart: unless-stopped
     ports:
       - "27017:27017"
+    command: [ "--replSet", "rs0" ]
     volumes:
       - mongo-data:/data/db
     networks:
-      - cqrs-network
+      - default
 
   mongo-express:
     container_name: mongo-express
@@ -41,10 +42,12 @@ services:
     depends_on:
       - mongo
     networks:
-      - cqrs-network
+      - default
 
 volumes:
   mongo-data:
 
 networks:
-  cqrs-network:
+  default:
+    name: debezium-net
+    external: true

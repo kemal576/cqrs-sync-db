@@ -8,12 +8,13 @@ services:
       - ELASTICSEARCH_ADDR=http://elasticsearch:9200
     depends_on:
       - elasticsearch
+    networks:
+      - default
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      # - ELASTIC_PASSWORD=12345
       - http.cors.enabled=true
       - http.cors.allow-origin="*"
       - http.cors.allow-headers=Authorization,Content-Type,X-Requested-With,Content-Length,Accept,Origin
@@ -24,11 +25,20 @@ services:
       - "9300:9300"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    networks:
+      - default
   elasticvue:
     image: cars10/elasticvue:latest
     ports:
-      - "8081:8080"
+      - "8082:8080"
     depends_on:
       - elasticsearch
+    networks:
+      - default
 volumes:
   esdata:
+  
+networks:
+  default:
+    name: debezium-net
+    external: true
