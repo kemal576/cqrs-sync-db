@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ProductRead/cache"
 	"ProductRead/handlers"
 	"ProductRead/repositories"
 	"os"
@@ -24,7 +25,16 @@ func main() {
 		panic(err)
 	}
 
-	repo := repositories.NewProductReadRepository(es)
+	redisClient, err := cache.NewRedisClientFromEnv()
+	if err != nil {
+		println("Warning: could not connect to Redis:", err)
+		// Maybe i can add a retry mechanism here with a circuit breaker
+	}
+	if redisClient != nil {
+		defer redisClient.Close()
+	}
+
+	repo := repositories.NewProductReadRepository(es, redisClient)
 
 	r := gin.Default()
 

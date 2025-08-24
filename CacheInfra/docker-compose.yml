@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  redis-master:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --port 6379
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.10
+
+  redis-slave1:
+    image: redis:7.2-alpine
+    ports:
+      - "6380:6380"
+    command: redis-server --appendonly yes --port 6380 --replicaof 172.30.0.10 6379
+    depends_on: [redis-master]
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.11
+
+  redis-slave2:
+    image: redis:7.2-alpine
+    ports:
+      - "6381:6381"
+    command: redis-server --appendonly yes --port 6381 --replicaof 172.30.0.10 6379
+    depends_on: [redis-master]
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.12
+
+  sentinel-1:
+    image: redis:7.2-alpine
+    ports: ["26379:26379"]
+    depends_on: [redis-master, redis-slave1, redis-slave2]
+    command: >
+      sh -c 'echo "port 26379" > /etc/sentinel.conf &&
+             echo "sentinel monitor mymaster 172.30.0.10 6379 2" >> /etc/sentinel.conf &&
+             echo "sentinel down-after-milliseconds mymaster 2000" >> /etc/sentinel.conf &&
+             echo "sentinel failover-timeout mymaster 5000" >> /etc/sentinel.conf &&
+             echo "sentinel parallel-syncs mymaster 1" >> /etc/sentinel.conf &&
+             echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
+             redis-server /etc/sentinel.conf --sentinel'
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.13
+
+  sentinel-2:
+    image: redis:7.2-alpine
+    ports: ["26380:26379"]
+    depends_on: [redis-master, redis-slave1, redis-slave2]
+    command: >
+      sh -c 'echo "port 26379" > /etc/sentinel.conf &&
+             echo "sentinel monitor mymaster 172.30.0.10 6379 2" >> /etc/sentinel.conf &&
+             echo "sentinel down-after-milliseconds mymaster 2000" >> /etc/sentinel.conf &&
+             echo "sentinel failover-timeout mymaster 5000" >> /etc/sentinel.conf &&
+             echo "sentinel parallel-syncs mymaster 1" >> /etc/sentinel.conf &&
+             echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
+             redis-server /etc/sentinel.conf --sentinel'
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.14
+
+  sentinel-3:
+    image: redis:7.2-alpine
+    ports: ["26381:26379"]
+    depends_on: [redis-master, redis-slave1, redis-slave2]
+    command: >
+      sh -c 'echo "port 26379" > /etc/sentinel.conf &&
+             echo "sentinel monitor mymaster 172.30.0.10 6379 2" >> /etc/sentinel.conf &&
+             echo "sentinel down-after-milliseconds mymaster 2000" >> /etc/sentinel.conf &&
+             echo "sentinel failover-timeout mymaster 5000" >> /etc/sentinel.conf &&
+             echo "sentinel parallel-syncs mymaster 1" >> /etc/sentinel.conf &&
+             echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
+             redis-server /etc/sentinel.conf --sentinel'
+    networks:
+      redisnet:
+        ipv4_address: 172.30.0.15
+
+networks:
+  redisnet:
+    driver: bridge
+    external: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
