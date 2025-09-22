@@ -40,9 +40,10 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseStaticFiles();
     app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>{ c.InjectStylesheet("/SwaggerDark.css"); });
 }
 
 app.MapProductEndpoints(); // handler registration
