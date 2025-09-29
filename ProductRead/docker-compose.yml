@@ -12,7 +12,7 @@ services:
       - elasticsearch
     networks:
       - default
-      - redisnet
+      - cache-net
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
     environment:
@@ -45,5 +45,5 @@ networks:
   default:
     name: debezium-net
     external: true
-  redisnet:
+  cache-net:
     external: true

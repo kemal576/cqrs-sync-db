@@ -13,10 +13,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - MongoSettings__ConnectionString=mongodb://mongo:27017
       - MongoSettings__DatabaseName=ProductDb
+      - REDIS_NODES=172.31.0.10:6379,172.31.0.11:6379,172.31.0.12:6379
     depends_on:
       - mongo
     networks:
       - default
+      - lock-net
 
   mongo:
     container_name: mongo
@@ -50,4 +52,6 @@ volumes:
 networks:
   default:
     name: debezium-net
+    external: true
+  lock-net:
     external: true

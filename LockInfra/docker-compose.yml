@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  lock-redis1:
+    image: redis:7.2-alpine
+    container_name: lock-redis1
+    ports:
+      - "7379:6379"
+    command: redis-server --appendonly yes --port 6379
+    networks:
+      lock-net:
+        ipv4_address: 172.31.0.10
+
+  lock-redis2:
+    image: redis:7.2-alpine
+    container_name: lock-redis2
+    ports:
+      - "7380:6379"
+    command: redis-server --appendonly yes --port 6379
+    networks:
+      lock-net:
+        ipv4_address: 172.31.0.11
+
+  lock-redis3:
+    image: redis:7.2-alpine
+    container_name: lock-redis3
+    ports:
+      - "7381:6379"
+    command: redis-server --appendonly yes --port 6379
+    networks:
+      lock-net:
+        ipv4_address: 172.31.0.12
+
+networks:
+  lock-net:
+    driver: bridge
+    external: true
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24

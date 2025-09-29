@@ -7,7 +7,7 @@ services:
       - "6379:6379"
     command: redis-server --appendonly yes --port 6379
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.10
 
   redis-slave1:
@@ -17,7 +17,7 @@ services:
     command: redis-server --appendonly yes --port 6380 --replicaof 172.30.0.10 6379
     depends_on: [redis-master]
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.11
 
   redis-slave2:
@@ -27,7 +27,7 @@ services:
     command: redis-server --appendonly yes --port 6381 --replicaof 172.30.0.10 6379
     depends_on: [redis-master]
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.12
 
   sentinel-1:
@@ -43,7 +43,7 @@ services:
              echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
              redis-server /etc/sentinel.conf --sentinel'
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.13
 
   sentinel-2:
@@ -59,7 +59,7 @@ services:
              echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
              redis-server /etc/sentinel.conf --sentinel'
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.14
 
   sentinel-3:
@@ -75,11 +75,11 @@ services:
              echo "sentinel resolve-hostnames no" >> /etc/sentinel.conf &&
              redis-server /etc/sentinel.conf --sentinel'
     networks:
-      redisnet:
+      cache-net:
         ipv4_address: 172.30.0.15
 
 networks:
-  redisnet:
+  cache-net:
     driver: bridge
     external: true
     ipam:

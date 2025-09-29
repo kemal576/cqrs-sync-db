@@ -1,9 +1,10 @@
-using FluentValidation;
 using MediatR;
+using ProductWrite.Application.DistributedLock;
 using ProductWrite.Infrastructure;
 
 namespace ProductWrite.Application.Commands;
 
+[RedLock("locks:product-(Id)", 10)]
 public record UpdateProductPriceCommand(Guid Id, decimal Price) : IRequest;
 
 public class UpdateProductPriceCommandHandler : IRequestHandler<UpdateProductPriceCommand>

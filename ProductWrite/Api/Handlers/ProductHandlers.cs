@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MediatR;
+using ProductWrite.Api.Requests;
 using ProductWrite.Application.Commands;
 
 namespace ProductWrite.Api.Handlers;
@@ -9,9 +10,9 @@ public static class ProductHandlers
     public static void MapProductEndpoints(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/products", async (
-            Requests.CreateProductRequest request,
+            CreateProductRequest request,
             IMediator mediator,
-            IValidator<Requests.CreateProductRequest> validator) =>
+            IValidator<CreateProductRequest> validator) =>
         {
             var validation = await validator.ValidateAsync(request);
             if (!validation.IsValid)
@@ -29,17 +30,17 @@ public static class ProductHandlers
             return Results.Ok(new { productId });
         });
 
-        routes.MapPatch("/products/{id}/price", async (
+        routes.MapPatch("/products/{id:guid}/price", async (
             Guid id,
-            Requests.UpdatePriceRequest request,
+            UpdateProductPriceRequest request,
             IMediator mediator,
-            IValidator<UpdateProductPriceCommand> validator) =>
+            IValidator<UpdateProductPriceRequest> validator) =>
         {
-            var command = new UpdateProductPriceCommand(id, request.Price);
-
-            var validation = await validator.ValidateAsync(command);
+            var validation = await validator.ValidateAsync(request);
             if (!validation.IsValid)
                 return Results.BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+            
+            var command = new UpdateProductPriceCommand(id, request.Price);
 
             await mediator.Send(command);
 

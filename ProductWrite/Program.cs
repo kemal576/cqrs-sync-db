@@ -1,9 +1,11 @@
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using ProductWrite.Api;
 using ProductWrite.Api.Handlers;
-using ProductWrite.Application.Commands;
+using ProductWrite.Api.Validators;
+using ProductWrite.Application.DistributedLock;
 using ProductWrite.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,8 +34,11 @@ builder.Services.AddScoped(sp =>
     return client.GetDatabase(settings.DatabaseName);
 });
 
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RedLockBehavior<,>));
+builder.Services.RegisterRedLock();
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommand>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductRequestValidator>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
