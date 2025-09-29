@@ -1,6 +1,6 @@
 namespace ProductWrite.Api.Requests;
 
-public class UpdatePriceRequest
+public class UpdateProductPriceRequest
 {
     public decimal Price { get; set; }
 }

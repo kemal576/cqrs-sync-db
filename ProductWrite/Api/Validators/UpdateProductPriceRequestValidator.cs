@@ -3,9 +3,9 @@ using ProductWrite.Api.Requests;
 
 namespace ProductWrite.Api.Validators;
 
-public class UpdatePriceRequestValidator : AbstractValidator<UpdatePriceRequest>
+public class UpdateProductPriceRequestValidator : AbstractValidator<UpdateProductPriceRequest>
 {
-    public UpdatePriceRequestValidator()
+    public UpdateProductPriceRequestValidator()
     {
         RuleFor(x => x.Price).GreaterThan(0).WithMessage("Price must be greater than 0.");
     }
