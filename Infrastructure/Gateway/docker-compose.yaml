@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  krakend:
+    image: devopsfaith/krakend:2.0
+    container_name: krakend-gateway
+    volumes:
+      - ./krakend/krakend.json:/etc/krakend/krakend.json:ro
+    ports:
+      - "8081:8080"
+    networks:
+      - default
+
+networks:
+  default:
+    external: true
+    name: debezium-net
