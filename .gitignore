@@ -53,5 +53,6 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /.idea/*
+/.vscode/*
 /ProductWrite/.idea/*
 /Folder.DotSettings.user

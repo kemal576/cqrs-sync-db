@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+data:
+  sentinel.conf: |
+    port 26379
+    dir /tmp
+    sentinel resolve-hostnames yes
+    sentinel monitor mymaster redis-0.redis.cache.svc.cluster.local 6379 2
+    sentinel down-after-milliseconds mymaster 5000
+    sentinel parallel-syncs mymaster 1
+    sentinel failover-timeout mymaster 60000
+    sentinel announce-hostnames yes
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel
+  labels:
+    app: redis-sentinel
+spec:
+  clusterIP: None  # Headless service için bu gerekli
+  ports:
+  - port: 26379
+    name: sentinel
+  selector:
+    app: redis-sentinel
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+spec:
+  serviceName: redis-sentinel
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel
+    spec:
+      initContainers:
+      - name: config
+        image: busybox:1.28
+        command: ['sh', '-c', 'cp /readonly/sentinel.conf /etc/redis/sentinel.conf']
+        volumeMounts:
+        - name: sentinel-config
+          mountPath: /readonly
+        - name: redis-config
+          mountPath: /etc/redis
+      containers:
+      - name: sentinel
+        image: redis:7.2-alpine
+        command: ["redis-sentinel", "/etc/redis/sentinel.conf"]
+        ports:
+        - containerPort: 26379
+          name: sentinel
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        - name: sentinel-data
+          mountPath: /tmp
+      volumes:
+      - name: sentinel-config
+        configMap:
+          name: sentinel-config
+      - name: redis-config
+        emptyDir: {}
+      - name: sentinel-data
+        emptyDir: {}
