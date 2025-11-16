@@ -51,5 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>{ c.InjectStylesheet("/SwaggerDark.css"); });
 }
 
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
 app.MapProductEndpoints(); // handler registration
 app.Run();

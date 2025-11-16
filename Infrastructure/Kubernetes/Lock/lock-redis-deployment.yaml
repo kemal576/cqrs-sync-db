@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-lock
+  labels:
+    app: redis-lock
+spec:
+  clusterIP: None  # Headless service for StatefulSet
+  ports:
+  - port: 6379
+    name: redis
+  selector:
+    app: redis-lock
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-lock
+spec:
+  serviceName: redis-lock
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-lock
+  template:
+    metadata:
+      labels:
+        app: redis-lock
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        command: ["redis-server", "--appendonly", "yes", "--port", "6379"]
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: redis-lock-data
+          mountPath: /data
+        livenessProbe:
+          tcpSocket:
+            port: redis
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-lock-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
