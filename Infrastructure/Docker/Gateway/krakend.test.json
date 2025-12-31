@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "name": "cqrs-gateway-k8s",
+  "extra_config": {
+    "proxy": {
+      "preserve_input_headers": true,
+      "timeout": "3s"
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/products",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "host": ["http://productread.product-read.svc.cluster.local:8080"],
+          "url_pattern": "/products",
+          "encoding": "no-op",
+          "sd": "static"
+        }
+      ]
+    },
+    {
+      "endpoint": "/products/{id}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": ["http://productread.product-read.svc.cluster.local:8080"],
+          "url_pattern": "/products/{id}",
+          "encoding": "json",
+          "sd": "static"
+        }
+      ]
+    },
+    {
+      "endpoint": "/products",
+      "method": "POST",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": ["http://productwrite.product-write.svc.cluster.local:8080"],
+          "url_pattern": "/products",
+          "encoding": "json",
+          "sd": "static"
+        }
+      ]
+    },
+    {
+      "endpoint": "/products/{id}/price",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "host": ["http://productwrite.product-write.svc.cluster.local:8080"],
+          "url_pattern": "/products/{id}/price",
+          "encoding": "json",
+          "sd": "static"
+        }
+      ]
+    }
+  ]
+}

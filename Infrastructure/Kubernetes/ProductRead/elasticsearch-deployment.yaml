@@ -4,6 +4,7 @@ metadata:
   name: elasticsearch
   labels:
     app: elasticsearch
+  namespace: elastic
 spec:
   ports:
   - port: 9200
@@ -21,6 +22,7 @@ metadata:
   name: elasticsearch
   labels:
     app: elasticsearch
+  namespace: elastic
 spec:
   serviceName: elasticsearch
   replicas: 1
@@ -63,7 +65,7 @@ spec:
           name: transport
         env:
         - name: cluster.name
-          value: "es-cluster"
+          value: es-cluster
         - name: node.name
           valueFrom:
             fieldRef:
@@ -74,16 +76,6 @@ spec:
           value: "-Xms128m -Xmx128m"
         - name: xpack.security.enabled
           value: "false"
-        - name: http.cors.enabled
-          value: "true"
-        - name: http.cors.allow-origin
-          value: "*"
-        - name: http.cors.allow-methods
-          value: "OPTIONS,HEAD,GET,POST,PUT,DELETE"
-        - name: http.cors.allow-headers
-          value: "X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Headers,Accept"
-        - name: http.cors.allow-credentials
-          value: "true"
         volumeMounts:
         - name: elasticsearch-data
           mountPath: /usr/share/elasticsearch/data

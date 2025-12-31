@@ -3,7 +3,11 @@ package main
 import (
 	"ProductConsumer/consumers"
 	"log"
+	"net/http"
 	"os"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -19,5 +23,25 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create consumer: %v", err)
 	}
-	c.Consume()
+
+	// Start Kafka consumer in a goroutine with retry loop
+	go func() {
+		for {
+			c.Consume()
+			log.Println("Kafka consumer disconnected, retrying in 5 seconds...")
+			time.Sleep(5 * time.Second)
+		}
+	}()
+
+	// Start HTTP server for health checks
+	r := gin.Default()
+	r.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status": "healthy",
+		})
+	})
+
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("Failed to start HTTP server: %v", err)
+	}
 }

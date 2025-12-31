@@ -4,6 +4,7 @@ metadata:
   name: productwrite
   labels:
     app: product-write
+  namespace: product-write
 spec:
   type: NodePort
   ports:
@@ -20,8 +21,9 @@ metadata:
   name: productwrite
   labels:
     app: product-write
+  namespace: product-write
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: product-write
@@ -41,7 +43,7 @@ spec:
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
         - name: MongoSettings__ConnectionString
-          value: mongodb://mongodb-0.mongodb.mongo.svc.cluster.local:27017/?directConnection=true
+          value: mongodb://mongodb-0.mongodb.mongo.svc.cluster.local:27017/?replicaSet=rs0
         - name: MongoSettings__DatabaseName
           value: ProductDb
         - name: REDIS_NODES

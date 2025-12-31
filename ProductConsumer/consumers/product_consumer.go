@@ -43,9 +43,11 @@ const (
 )
 
 type DebeziumMessageValue struct {
-	Op     string          `json:"op"`
-	After  json.RawMessage `json:"after"`
-	Before json.RawMessage `json:"before"`
+	Payload struct {
+		Op     string          `json:"op"`
+		After  json.RawMessage `json:"after"`
+		Before json.RawMessage `json:"before"`
+	} `json:"payload"`
 }
 
 type DebeziumMessageKey struct {
@@ -53,15 +55,20 @@ type DebeziumMessageKey struct {
 }
 
 func (pc *ProductConsumer) Consume() {
-	consumer, err := sarama.NewConsumer([]string{pc.KafkaBroker}, nil)
+	config := sarama.NewConfig()
+	config.Consumer.Return.Errors = true
+
+	consumer, err := sarama.NewConsumer([]string{pc.KafkaBroker}, config)
 	if err != nil {
-		log.Fatalf("Kafka error: %v", err)
+		log.Printf("Kafka connection error: %v. Retrying...", err)
+		return
 	}
 	defer consumer.Close()
 
-	partitionConsumer, err := consumer.ConsumePartition(pc.Topic, 0, sarama.OffsetNewest)
+	partitionConsumer, err := consumer.ConsumePartition(pc.Topic, 0, sarama.OffsetOldest)
 	if err != nil {
-		log.Fatalf("Partition error: %v", err)
+		log.Printf("Partition error: %v. Retrying...", err)
+		return
 	}
 	defer partitionConsumer.Close()
 
@@ -71,21 +78,24 @@ func (pc *ProductConsumer) Consume() {
 			continue
 		}
 
+		log.Printf("Raw Kafka message value: %s", string(msg.Value))
+
 		var dbzMsgValue DebeziumMessageValue
 		if err := json.Unmarshal(msg.Value, &dbzMsgValue); err != nil {
 			log.Printf("Invalid CDC message value: %v", err)
 			continue
 		}
 
-		switch dbzMsgValue.Op {
+		switch dbzMsgValue.Payload.Op {
 		case OpCreate, OpRead, OpUpdate:
-			pc.handleUpsert(dbzMsgValue.After)
+			pc.handleUpsert(dbzMsgValue.Payload.After)
 
 		case OpDelete:
 			pc.handleDelete(msg.Key)
 
 		default:
-			log.Printf("Unknown operation type: %s", dbzMsgValue.Op)
+			log.Printf("Unknown operation type: %s", dbzMsgValue.Payload.Op)
+			log.Printf("Kafka Message: Key: %s, Value: %s", string(msg.Key), string(msg.Value))
 		}
 	}
 }

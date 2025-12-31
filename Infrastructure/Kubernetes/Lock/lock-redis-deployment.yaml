@@ -4,6 +4,7 @@ metadata:
   name: redis-lock
   labels:
     app: redis-lock
+  namespace: lock
 spec:
   clusterIP: None  # Headless service for StatefulSet
   ports:
@@ -16,6 +17,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redis-lock
+  namespace: lock
 spec:
   serviceName: redis-lock
   replicas: 3

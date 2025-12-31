@@ -4,6 +4,7 @@ metadata:
   name: redis
   labels:
     app: redis
+  namespace: cache
 spec:
   ports:
   - port: 6379
@@ -16,6 +17,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redis
+  namespace: cache
 spec:
   serviceName: redis
   replicas: 3

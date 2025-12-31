@@ -4,6 +4,7 @@ metadata:
   name: mongodb
   labels:
     app: mongodb
+  namespace: mongo
 spec:
   clusterIP: None  # Headless service for StatefulSet
   ports:
@@ -16,6 +17,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
+  namespace: mongo
 spec:
   serviceName: mongodb
   replicas: 1
@@ -75,6 +77,7 @@ metadata:
   name: mongo-express
   labels:
     app: mongo-express
+  namespace: mongo
 spec:
   type: NodePort
   ports:
@@ -91,6 +94,7 @@ metadata:
   name: mongo-express
   labels:
     app: mongo-express
+  namespace: mongo
 spec:
   replicas: 1
   selector:
