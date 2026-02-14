@@ -4,6 +4,7 @@ import (
 	"ProductRead/cache"
 	"ProductRead/handlers"
 	"ProductRead/repositories"
+	"log"
 	"os"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -27,7 +28,7 @@ func main() {
 
 	redisClient, err := cache.NewRedisClientFromEnv()
 	if err != nil {
-		println("Warning: could not connect to Redis:", err)
+		log.Printf("Error connecting to Redis: %v", err)
 		// Maybe i can add a retry mechanism here with a circuit breaker
 	}
 	if redisClient != nil {
@@ -37,6 +38,12 @@ func main() {
 	repo := repositories.NewProductReadRepository(es, redisClient)
 
 	r := gin.Default()
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
 
 	r.GET("/products", handlers.GetAllProducts(repo))
 	r.GET("/products/:id", handlers.GetProductById(repo))

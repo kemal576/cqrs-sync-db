@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-connector-registration
+  namespace: cdc
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: register-connector
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Waiting for Debezium Connect to be ready..."
+          until curl -sf http://debezium-connect.cdc.svc.cluster.local:8083/; do
+            echo "Debezium Connect not ready, waiting..."
+            sleep 5
+          done
+          
+          echo "Debezium Connect is ready! Registering MongoDB connector..."
+
+          # Best-effort cleanup (ignore if it doesn't exist yet)
+          curl -s -X DELETE http://debezium-connect.cdc.svc.cluster.local:8083/connectors/mongodb-connector >/dev/null 2>&1 || true
+          
+          response=$(curl -sS -w "\n%{http_code}" -X POST http://debezium-connect.cdc.svc.cluster.local:8083/connectors \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "mongodb-connector",
+              "config": {
+                "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+                "mongodb.connection.string": "mongodb://mongodb-0.mongodb.mongo.svc.cluster.local:27017/?replicaSet=rs0",
+                "topic.prefix": "product",
+                "collection.include.list": "ProductDb.Products",
+                "tasks.max": "1",
+                "capture.mode": "change_streams_update_full"
+              }
+            }')
+
+          body=$(echo "$response" | sed '$d')
+          code=$(echo "$response" | tail -n 1)
+
+          echo "$body"
+
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo ""
+            echo "MongoDB connector registration failed (HTTP $code)"
+            exit 1
+          fi
+          
+          echo ""
+          echo "MongoDB connector registered successfully!"

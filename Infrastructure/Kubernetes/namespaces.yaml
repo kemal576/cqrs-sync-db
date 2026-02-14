@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cdc
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mongo
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: elastic
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cache
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lock
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: product-read
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: product-write
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: product-consumer

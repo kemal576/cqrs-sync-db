@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -16,8 +17,9 @@ type RedisClient struct {
 func NewRedisClientFromEnv() (*RedisClient, error) {
 	masterName := os.Getenv("REDIS_MASTER_NAME")
 	sentinels := os.Getenv("REDIS_SENTINELS")
+
 	if masterName == "" || sentinels == "" {
-		return nil, nil
+		return nil, errors.New("REDIS_MASTER_NAME or REDIS_SENTINELS environment variable is not set")
 	}
 
 	addrs := strings.Split(sentinels, ",")
@@ -34,7 +36,7 @@ func NewRedisClientFromEnv() (*RedisClient, error) {
 
 	cli := redis.NewFailoverClient(opt)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := cli.Ping(ctx).Err(); err != nil {
 		return nil, err

@@ -24,7 +24,16 @@ builder.Services.Configure<MongoSettings>(
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
-    return new MongoClient(settings.ConnectionString);
+    var mongoSettings = MongoClientSettings.FromConnectionString(settings.ConnectionString);
+    
+    // Connection pool configuration for high load
+    mongoSettings.MaxConnectionPoolSize = 200;
+    mongoSettings.MinConnectionPoolSize = 50;
+    mongoSettings.WaitQueueTimeout = TimeSpan.FromSeconds(5);
+    mongoSettings.ConnectTimeout = TimeSpan.FromSeconds(10);
+    mongoSettings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+    
+    return new MongoClient(mongoSettings);
 });
 
 builder.Services.AddScoped(sp =>
@@ -50,6 +59,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>{ c.InjectStylesheet("/SwaggerDark.css"); });
 }
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.MapProductEndpoints(); // handler registration
 app.Run();
